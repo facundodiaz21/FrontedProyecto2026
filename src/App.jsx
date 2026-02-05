@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import "../src/app.css";
-import { getEmpleados, postEmpleados } from "./api/empleado.service.js";
+import {
+  deleteEmpleados,
+  getEmpleados,
+  postEmpleados,
+} from "./api/empleado.service.js";
 
 function App() {
   //esta funcion realiza un get de empleados
@@ -34,11 +38,21 @@ function App() {
       console.error("error al crear empleado", error);
     }
   };
+  const handleDelete = async (id, nombre) => {
+    if (!window.confirm(`estas seguro que deseas eliminar "${nombre}"`)) return;
+    try {
+      await deleteEmpleados(id);
+      alert("empleado eliminado con exito");
+      fetchEmpleados();
+    } catch (error) {
+      console.error("error al intentar eliminar empleado", error);
+    }
+  };
   return (
     <div>
       <h2>Gestion de empleados</h2>
       {/* metodo Post */}
-      <div >
+      <div>
         <form className="cont-form">
           <input
             placeholder="Nombre Completo"
@@ -82,7 +96,15 @@ function App() {
         <ul>
           {empleados.map((empleado) => (
             <li key={empleado._id}>
-              {empleado.nombre} - {empleado.puesto}- {empleado.estado} -{empleado.contacto}
+              {empleado.nombre} - {empleado.puesto}- {empleado.estado} -
+              {empleado.contacto}
+              <div>
+                <button
+                  onClick={() => handleDelete(empleado._id, empleado.nombre)}
+                >
+                  eliminar
+                </button>
+              </div>
             </li>
           ))}
         </ul>
