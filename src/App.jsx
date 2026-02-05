@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import "../src/app.css";
 import {
   deleteEmpleados,
+  getEmpleadoById,
   getEmpleados,
   postEmpleados,
+  putEmpleados,
 } from "./api/empleado.service.js";
 
 function App() {
@@ -16,6 +18,8 @@ function App() {
     contacto: "",
     estado: "",
   });
+  //esta funcion es para el put(editar)
+  const [editarEmpleado, setEditarEmpleado] = useState(null);
   const fetchEmpleados = async () => {
     try {
       const response = await getEmpleados();
@@ -31,7 +35,12 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await postEmpleados(formEmpleado);
+      if (editarEmpleado) {
+        await putEmpleados(editarEmpleado, formEmpleado);
+        setEditarEmpleado(null);
+      } else {
+        await postEmpleados(formEmpleado);
+      }
       setFormEmpleado({ nombre: "", puesto: "", contacto: "", estado: "" });
       fetchEmpleados();
     } catch (error) {
@@ -46,6 +55,20 @@ function App() {
       fetchEmpleados();
     } catch (error) {
       console.error("error al intentar eliminar empleado", error);
+    }
+  };
+  const handleEdit = async (id) => {
+    try {
+      const { data } = await getEmpleadoById(id);
+      setFormEmpleado({
+        nombre: data.empleado.nombre || "",
+        puesto: data.empleado.puesto || "",
+        contacto: data.empleado.contacto || "",
+        estado: data.empleado.estado || "",
+      });
+      setEditarEmpleado(id);
+    } catch (error) {
+      console.error("error al obtener empleado", error);
     }
   };
   return (
@@ -84,7 +107,7 @@ function App() {
             }
           />
           <button type="submit" onClick={handleSubmit}>
-            Crear Empleado
+            {editarEmpleado ? "guardar cambios" : "crear empleado"}
           </button>
         </form>
       </div>
@@ -98,12 +121,13 @@ function App() {
             <li key={empleado._id}>
               {empleado.nombre} - {empleado.puesto}- {empleado.estado} -
               {empleado.contacto}
-              <div>
+              <div className="btn-map">
                 <button
                   onClick={() => handleDelete(empleado._id, empleado.nombre)}
                 >
                   eliminar
                 </button>
+                <button onClick={() => handleEdit(empleado._id)}>editar</button>
               </div>
             </li>
           ))}
