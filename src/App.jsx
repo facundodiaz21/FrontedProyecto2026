@@ -4,6 +4,7 @@ import {
   deleteEmpleados,
   getEmpleadoById,
   getEmpleados,
+  patchEmpleados,
   postEmpleados,
   putEmpleados,
 } from "./api/empleado.service.js";
@@ -71,6 +72,21 @@ function App() {
       console.error("error al obtener empleado", error);
     }
   };
+  const handlePatch = async (id, nuevoEstado) => {
+    if (nuevoEstado === "inactivo") {
+      const ok = window.confirm(
+        "el empleado pasara a inactivo y no se mostrara, ¿estas seguro?",
+      );
+      if (!ok) return;
+    }
+
+    try {
+      await patchEmpleados(id, nuevoEstado);
+      fetchEmpleados();
+    } catch (error) {
+      console.error("error al intentar cambiar de estado", error);
+    }
+  };
   return (
     <div>
       <h2>Gestion de empleados</h2>
@@ -102,6 +118,7 @@ function App() {
             type=""
             placeholder="Estado"
             value={formEmpleado.estado}
+            disabled={!!editarEmpleado}
             onChange={(e) =>
               setFormEmpleado({ ...formEmpleado, estado: e.target.value })
             }
@@ -129,6 +146,28 @@ function App() {
                 </button>
                 <button onClick={() => handleEdit(empleado._id)}>editar</button>
               </div>
+              {empleado.estado === "activo" && (
+                <>
+                  <button
+                    onClick={() => handlePatch(empleado._id, "suspendido")}
+                  >
+                    Suspender
+                  </button>
+                  <button onClick={() => handlePatch(empleado._id, "inactivo")}>
+                    Dar de baja
+                  </button>
+                </>
+              )}
+              {empleado.estado === "suspendido" && (
+                <>
+                  <button onClick={() => handlePatch(empleado._id, "activo")}>
+                    Activar
+                  </button>
+                  <button onClick={() => handlePatch(empleado._id, "inactivo")}>
+                    Dar de baja
+                  </button>
+                </>
+              )}
             </li>
           ))}
         </ul>
